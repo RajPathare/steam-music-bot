@@ -1,0 +1,8 @@
+node_modules
+config.json
+web/sounds
+.env
+.vscode
+steam
+db
+chromium-user-data

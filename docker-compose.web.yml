@@ -1,0 +1,40 @@
+services:
+  node-chrome:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        BROWSER_DEB: ${BROWSER_DEB-https://github.com/RobRich999/Chromium_Clang/releases/download/v147.0.7685.0-r1584191-linux64-deb-avx2/chromium-browser-unstable_147.0.7685.0-1_amd64.deb}
+        BROWSER_PATH: ${BROWSER_PATH-/usr/bin/chromium-browser}
+    ports:
+      - ${PORT-8080}:8081 # Node web server
+    volumes:
+      - ./config.json:/beepboop/config.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - STEAM_USERNAME=${STEAM_USERNAME}
+      - STEAM_PASSWORD=${STEAM_PASSWORD}
+      - MODE=web
+      - DB_CONNECTION=postgres://beepboop:beepboop@db/beepboop
+    restart: unless-stopped
+  db:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=beepboop
+      - POSTGRES_PASSWORD=beepboop
+      - POSTGRES_DB=beepboop
+    expose:
+      - 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beepboop -d beepboop"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+volumes:
+  postgres_data:
